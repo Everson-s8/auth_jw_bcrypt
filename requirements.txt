@@ -1,6 +1,6 @@
 fastapi
 python-dotenv
-jose           
-bcrypt        
-motor          
-httpx      
+pyjwt
+bcrypt
+motor
+httpx
