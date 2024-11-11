@@ -13,7 +13,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user or not bcrypt.checkpw(form_data.password.encode("utf-8"), user["password"].encode("utf-8")):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário ou senha incorretos")
 
-    access_token = create_access_token(data={"sub": user["username"], "user_id": str(user["_id"])})
+    access_token = create_access_token(data={
+        "sub": user["username"],
+        "user_id": str(user["_id"]),
+        "role": user["role"]  # Inclui o papel no token
+    })
     return {"access_token": access_token, "token_type": "bearer", "user_id": str(user["_id"])}
 
 @router.post("/registrar")

@@ -5,11 +5,12 @@ import { useNavigate } from 'react-router-dom';
 function AuthPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('user'); // Novo estado para o papel
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
   const handleAuth = async (e) => {
-    e.preventDefault(); // Impede o comportamento padrão de refresh
+    e.preventDefault();
 
     try {
       let response;
@@ -18,14 +19,13 @@ function AuthPage() {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('password', password);
-        
+
         response = await api.post('/login', formData);
       } else {
-        // Registro: enviar dados em JSON
-        response = await api.post('/registrar', { username, password });
+        // Registro: enviar dados como JSON, incluindo o role
+        response = await api.post('/registrar', { username, password, role });
       }
 
-      // Armazenar o access_token e redirecionar para a página de piadas
       if (isLogin) {
         const accessToken = response.data.access_token;
         if (accessToken) {
@@ -72,6 +72,21 @@ function AuthPage() {
               required
             />
           </div>
+          {/* Campo de Role aparece apenas durante o registro */}
+          {!isLogin && (
+            <div className="mb-3">
+              <label className="form-label">Role</label>
+              <select
+                className="form-select"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                {/* Adicione mais opções se necessário */}
+              </select>
+            </div>
+          )}
           <button type="submit" className="btn btn-primary w-100">
             {isLogin ? 'Login' : 'Registrar'}
           </button>

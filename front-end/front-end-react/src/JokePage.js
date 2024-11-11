@@ -4,8 +4,34 @@ import { useNavigate } from 'react-router-dom';
 
 function JokePage() {
   const [joke, setJoke] = useState('');
-  const [timeRemaining, setTimeRemaining] = useState(0);
   const navigate = useNavigate();
+
+  // Função para decodificar o token
+  const decodeToken = (token) => {
+    if (!token) return null;
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    try {
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Erro ao decodificar o token:', e);
+      return null;
+    }
+  };
+
+  // Obtém o papel do usuário
+  const token = localStorage.getItem('access_token');
+  const decodedToken = decodeToken(token);
+  const userRole = decodedToken ? decodedToken.role : null;
+  const isAdmin = userRole === 'admin';
 
   const fetchJoke = async () => {
     try {
@@ -22,33 +48,15 @@ function JokePage() {
     }
   };
 
-  // Função para calcular o tempo restante do token
-  const calculateTimeRemaining = () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setTimeRemaining(0);
-      return;
+  const handleAdminAction = async () => {
+    try {
+      const response = await api.get('/admin');
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Erro ao acessar a área admin:', error);
+      alert('Você não tem permissão para acessar esta área.');
     }
-
-    const decodedToken = JSON.parse(atob(token.split('.')[1]));
-    const expiryTime = decodedToken.exp * 1000;
-    const currentTime = Date.now();
-    const remainingTime = expiryTime - currentTime;
-
-    setTimeRemaining(Math.max(Math.floor(remainingTime / 1000), 0));
   };
-
-  useEffect(() => {
-    // Atualiza o tempo restante a cada segundo
-    const interval = setInterval(() => {
-      calculateTimeRemaining();
-    }, 1000);
-
-    // Atualiza o tempo restante imediatamente ao montar o componente
-    calculateTimeRemaining();
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
@@ -62,10 +70,10 @@ function JokePage() {
             {joke}
           </div>
         )}
-        {timeRemaining > 0 && (
-          <div className="mt-4 text-center">
-            <h5>Tempo até expiração do token: {timeRemaining} segundos</h5>
-          </div>
+        {isAdmin && (
+          <button onClick={handleAdminAction} className="btn btn-warning w-100 mt-3">
+            Acessar Área Admin
+          </button>
         )}
       </div>
     </div>
