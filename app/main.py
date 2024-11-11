@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import CORS_ORIGINS, JOKES_API_KEY
 from app.auth.routers import router as auth_router
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_admin_user, get_current_user
 from app.db.utils_db import insert_joke, log_request
 import httpx
 
@@ -45,3 +45,8 @@ async def get_random_joke(current_user: dict = Depends(get_current_user)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail="Erro interno no servidor")
+
+
+@app.get("/admin")
+async def admin_route(admin_user: dict = Depends(get_admin_user)):
+    return {"message": "Oi, você é um admin!"}

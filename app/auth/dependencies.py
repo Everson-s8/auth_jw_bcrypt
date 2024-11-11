@@ -9,7 +9,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        # Decodifica o token JWT usando pyjwt
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
@@ -22,3 +21,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário não existe no banco de dados")
 
     return user
+
+async def get_admin_user(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Requisição inválida, você não tem permissão")
+    return current_user
+

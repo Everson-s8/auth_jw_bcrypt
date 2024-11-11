@@ -4,8 +4,9 @@ from app.db.database import db
 async def find_user_by_username(username: str):
     return await db.users.find_one({"username": username})
 
-async def create_user(username: str, hashed_password: str):
-    await db.users.insert_one({"username": username, "password": hashed_password})
+async def create_user(username: str, hashed_password: str, role: str):
+    await db.users.insert_one({"username": username, "password": hashed_password, "role": role})
+
 
 async def insert_joke(joke_text: str, user_id: str):
     await db.piadas.insert_one({"piada": joke_text, "user_id": user_id})
